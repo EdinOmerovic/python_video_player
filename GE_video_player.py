@@ -119,7 +119,7 @@ class VideoPlayer(QWidget):
         self.mediaPlayer.durationChanged.connect(self.durationChanged)
         self.mediaPlayer.error.connect(self.handleError)
 
-        print("QT5 Player started")
+        print("Global Electronics player started")
         print("press 'o' to open file (see context menu for more)")
         self.suspend_screensaver()
         
@@ -375,6 +375,7 @@ class VideoPlayer(QWidget):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(f)))
             self.playButton.setEnabled(True)
             self.mediaPlayer.play()
+            self.showFullScreen()
 
     def printMediaData(self):
         if self.mediaPlayer.mediaStatus() == 6:
@@ -450,24 +451,26 @@ font-weight: bold;
     """
 
 if __name__ == '__main__':
-
     app = QApplication(sys.argv)
     player = VideoPlayer('')
     player.setAcceptDrops(True)
-    player.setWindowTitle("QT5 Player")
+    player.setWindowTitle("Global Electronics player")
     player.setWindowIcon(QIcon.fromTheme("multimedia-video-player"))
     player.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-    player.setGeometry(100, 300, 600, 380)
-    player.setContextMenuPolicy(Qt.CustomContextMenu);
+    player.setContextMenuPolicy(Qt.CustomContextMenu)
     player.customContextMenuRequested[QPoint].connect(player.contextMenuRequested)
     player.hideSlider()
-    player.show()
-    player.widescreen = True
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 1:
+        #TODO: POKAZATI NAS LOGO FULL SCREEN
+        player.setGeometry(100, 300, 600, 380)
+        player.show()
+    
+    if len(sys.argv) == 2:
         print(sys.argv[1])
         if sys.argv[1].startswith("http"):
             player.myurl = sys.argv[1]
             player.playFromURL()
         else:
             player.loadFilm(sys.argv[1])
+    
 sys.exit(app.exec_())

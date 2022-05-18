@@ -1,16 +1,12 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
-
-from PyQt5.QtGui import QPalette, QKeySequence, QIcon
-from PyQt5.QtCore import QDir, Qt, QUrl, QSize, QPoint, QTime, QMimeData, QProcess, QEvent
-from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer, QMediaMetaData
+import sys
+import subprocess
+from PyQt5.QtGui import QKeySequence, QIcon
+from PyQt5.QtCore import QDir, Qt, QUrl, QPoint, QTime, QProcess
+from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLineEdit,
-                            QPushButton, QSizePolicy, QSlider, QMessageBox, QStyle, QVBoxLayout,  
+                            QPushButton, QSlider, QMessageBox, QStyle, QVBoxLayout,  
                             QWidget, QShortcut, QMenu)
-import sys
-import os
-import subprocess
 #QT_DEBUG_PLUGINS
 
 class VideoPlayer(QWidget):
@@ -18,11 +14,11 @@ class VideoPlayer(QWidget):
     def __init__(self, aPath, parent=None):
         super(VideoPlayer, self).__init__(parent)
 
-        self.setAttribute( Qt.WA_NoSystemBackground, True )
+        self.setAttribute( Qt.WA_NoSystemBackground, True)
         self.setAcceptDrops(True)
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.StreamPlayback)
         self.mediaPlayer.mediaStatusChanged.connect(self.printMediaData)
-        self.mediaPlayer.setVolume(80)
+        self.mediaPlayer.setVolume(100)
         self.videoWidget = QVideoWidget(self)
         
         self.lbl = QLineEdit('00:00:00')
@@ -75,7 +71,7 @@ class VideoPlayer(QWidget):
 
         self.setLayout(layout)
         
-        self.myinfo = "©2016\nAxel Schneider\n\nMouse Wheel = Zoom\nUP = Volume Up\nDOWN = Volume Down\n" + \
+        self.myinfo = "©2021\nGlobal Electronics video player\n\nMouse Wheel = Zoom\nUP = Volume Up\nDOWN = Volume Down\n" + \
                 "LEFT = < 1 Minute\nRIGHT = > 1 Minute\n" + \
                 "SHIFT+LEFT = < 10 Minutes\nSHIFT+RIGHT = > 10 Minutes"
 
@@ -374,11 +370,16 @@ class VideoPlayer(QWidget):
     def loadFilm(self, f):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(f)))
             self.playButton.setEnabled(True)
+            self.handleFullscreen()
             self.mediaPlayer.play()
-            self.showFullScreen()
+            
 
     def printMediaData(self):
-        if self.mediaPlayer.mediaStatus() == 6:
+        #Detected end of video, do a replay
+        if self.mediaPlayer.mediaStatus() == QMediaPlayer.EndOfMedia:
+            self.mediaPlayer.play()
+            
+        elif self.mediaPlayer.mediaStatus() == 6:
             if self.mediaPlayer.isMetaDataAvailable():
                 res = str(self.mediaPlayer.metaData("Resolution")).partition("PyQt5.QtCore.QSize(")[2].replace(", ", "x").replace(")", "")
                 print("%s%s" % ("Video Resolution = ",res))
@@ -386,8 +387,6 @@ class VideoPlayer(QWidget):
                     self.screen43()
                 else:
                     self.screen169()
-            else:
-                print("no metaData available")
       
     def openFileAtStart(self, filelist):
             matching = [s for s in filelist if ".myformat" in s]
